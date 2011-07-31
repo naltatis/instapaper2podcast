@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "dependencies": {
     "seq": "0.3.3",
-    "restler": "0.2.1"
+    "restler": "0.2.1",
+    "jquery": "1.6.2",
+    "jsdom": "0.2.1",
+    "languagedetect": "0.0.1"
    }
 }

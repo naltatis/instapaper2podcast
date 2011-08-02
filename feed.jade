@@ -1,0 +1,20 @@
+!!! xml
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:media="http://search.yahoo.com/mrss/">
+channel
+  title Instapaper Podcast
+  description a podcast version of your instapaper articles assebled by lions text synthesis
+  link= "http://patchcast.no.de"
+  lastBuildDate= dateFormat(items[0].date(), "ddd, dd mmm yyyy hh:MM:ss o")
+  itunes:image(href="http://www.instapaper.com/images/press-kit/icon-200-stroked.png")
+  media:thumbnail(url="http://www.instapaper.com/images/press-kit/icon-200-stroked.png")
+  language= "de-de"
+  - each entry in items
+    item
+      title= entry.title
+      itunes:subtitle= entry.title
+      link= entry.url
+      guid(isPermaLink="false")= entry.hash
+      pubDate= dateFormat(entry.date(), "ddd, dd mmm yyyy hh:MM:ss o")
+      enclosure(url=path + entry.hash + ".m4a", length=entry.size, type='audio/mpeg')
+      itunes:image(href="http://www.instapaper.com/images/press-kit/icon-512.png")
+</rss>

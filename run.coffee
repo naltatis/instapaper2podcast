@@ -1,10 +1,19 @@
 config = require './config'
 Instapaper = require('./lib/instapaper').Instapaper
 Speech = require('./lib/speech').Speech
+Feed = require('./lib/feed').Feed
+async = require 'async'
 
-speech = new Speech config.voices
 insta = new Instapaper config.instapaper
 insta.items (err, items) ->
-  console.log err, items
-  for item in items
-    speech.toFile item.text
+  toSpeech = (item, cb) ->
+    speech = new Speech item, config.voices, config.dropbox
+    speech.create_if_needed cb
+    
+  updateFeed = (cb) ->
+    feed = new Feed config.dropbox
+    feed.write items, cb
+    
+  async.map items, toSpeech, (err, results) ->
+    updateFeed (err) ->
+      console.log "feed written"

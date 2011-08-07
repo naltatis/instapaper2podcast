@@ -5,15 +5,14 @@ Feed = require('./lib/feed').Feed
 async = require 'async'
 
 insta = new Instapaper config.instapaper
+feed = new Feed config.dropbox
+
 insta.items (err, items) ->
+  console.log "got #{items.length} articles from instapaper"
   toSpeech = (item, cb) ->
     speech = new Speech item, config.voices, config.dropbox
     speech.create_if_needed cb
     
-  updateFeed = (cb) ->
-    feed = new Feed config.dropbox
-    feed.write items, cb
-    
   async.map items, toSpeech, (err, results) ->
-    updateFeed (err) ->
-      console.log "feed written"
+    feed.write items, (err) ->
+      console.log "done"

@@ -10,6 +10,14 @@ class Speech
     "#{@dropbox.path}#{@item.hash}.m4a"
   temp_path: ->
     "/tmp/instapaper-to-speech-#{@item.hash}.aiff"
+  _create_dir: (path) ->
+    console.log "creating dir #{@dropbox.path}"
+    fs.mkdirSync @dropbox.path, 0755 
+  _dir_exists: (path) ->
+    try
+      return fs.statSync @dropbox.path
+    catch error
+      return false
   _stats: (cb) ->
     fs.lstat @path(), (err, stat) =>
       @item.size = stat.size if stat?
@@ -20,6 +28,7 @@ class Speech
         @create =>
           @_stats cb
       else
+        console.log "skipping '#{@item.title}' - aac file already exists"
         cb()
   create: (cb) ->
     @item.load_text (err, text) =>
@@ -29,7 +38,9 @@ class Speech
       @_convert (err) =>
         cb err, @item
   _say: (text, cb) ->
-    say = spawn "say", ['-v', @_voice(text), '-r', '180', '-o', @temp_path()]
+    voice = @_voice(text)
+    console.log "converting '#{@item.title}' to speech using #{voice} (#{text.split(' ').length} words)"
+    say = spawn "say", ['-v', voice, '-r', '180', '-o', @temp_path()]
     say.stdin.write text
     say.stdin.end()
     say.stderr.on 'data', (data) ->
@@ -37,6 +48,8 @@ class Speech
     say.on "exit", (code) =>
       cb()
   _convert: (cb) ->
+    @_create_dir @dropbox.path if not @_dir_exists @dropbox.path
+    console.log "converting aiff to aac '#{@item.title}'"
     exec "afconvert -f mp4f -d aac -s 3 -q 127 #{@temp_path()} #{@path()}", cb
   _voice: (text) ->
     languages = lngDetector.detect text

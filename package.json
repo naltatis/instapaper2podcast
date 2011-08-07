@@ -10,6 +10,7 @@
     "languagedetect": "0.0.1",
     "jade": "0.13.0",
     "dateformat": "1.0.0-1.2.3",
-    "async": "0.1.6"
+    "async": "0.1.6",
+    "coffee-script": "1.1.2"
    }
 }

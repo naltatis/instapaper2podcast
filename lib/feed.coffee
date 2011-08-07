@@ -5,17 +5,19 @@ dateFormat = require 'dateformat'
 class Feed
   constructor: (@dropbox) ->
   path: ->
-    "#{@dropbox.path}feed.rss"
+    "#{@dropbox.path}podcast.xml"
   write: (items, cb) ->
     @_render items, (err, html) =>
+      console.log "feed rendering error", err if err?
       @_write html, cb
   _render: (items, cb) ->
     model = 
       items: items
       path: @dropbox.http
       dateFormat: dateFormat
-    jade.renderFile 'feed.jade', locals: model, cb
+    jade.renderFile "#{__dirname}/../view/feed.jade", locals: model, cb
   _write: (html, cb) ->
+    console.log "writing podcast file to #{@path()}"
     fs.writeFile @path(), html, (err) ->
       cb err
         

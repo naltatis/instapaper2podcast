@@ -34,8 +34,7 @@ Create your podcast
 `cp instapaper2podcast.plist ~/Library/LaunchAgents/instapaper2podcast.plist`  
 adjust the path in `~/Library/LaunchAgents/instapaper2podcast.plist`
 
-The program will be executed every 20 minutes and check for new Instapaper articles.
-
+The program will be executed every 20 minutes and check for new Instapaper articles.  
 Logging goes to `system.log` you can monitor using `Console.app`
 
 Subscribe to your podcast

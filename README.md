@@ -6,7 +6,7 @@ Requirements
 ------------
 * node.js -- `brew install node`
 * [paid 1$ per month Instapaper subscription for full api access](http://www.instapaper.com/subscription)
-* OSX Lion if you want more than multiple languages
+* OS X Lion *for international language support*
 
 Configuration
 -------------
@@ -31,8 +31,9 @@ Create your podcast
 
 ### run in the background using launchd
 
-`cp instapaper2podcast.plist ~/Library/LaunchAgents/instapaper2podcast.plist`  
-adjust the path in `~/Library/LaunchAgents/instapaper2podcast.plist`
+1. `cp instapaper2podcast.plist ~/Library/LaunchAgents/instapaper2podcast.plist`  
+2. adjust the path in `~/Library/LaunchAgents/instapaper2podcast.plist`
+3. `launchctl load ~/Library/LaunchAgents/instapaper2podcast.plist`
 
 The program will be executed every 20 minutes and check for new Instapaper articles.  
 Logging goes to `system.log` you can monitor using `Console.app`

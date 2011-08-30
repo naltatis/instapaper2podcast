@@ -6,7 +6,7 @@
     "seq": "0.3.3",
     "restler": "0.2.1",
     "jquery": "1.6.2",
-    "jsdom": "0.2.1",
+    "jsdom": "0.2.3",
     "languagedetect": "0.0.1",
     "jade": "0.13.0",
     "dateformat": "1.0.0-1.2.3",

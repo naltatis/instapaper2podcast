@@ -27,7 +27,7 @@ class Item
     date
   _cleanup: (text) ->
     text
-      .replace(/[\n\d\t"]/g, ' ')
+      .replace(/[\n\t"]/g, ' ')
       .replace(/\$/g, '\$')
       .replace(/\ {2,}/g, ' ')
   _request: _request

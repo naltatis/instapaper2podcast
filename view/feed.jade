@@ -5,20 +5,20 @@ channel
   description a podcast version of your instapaper articles assebled by lions text synthesis
   link https://github.com/naltatis/instapaper2podcast
   lastBuildDate= dateFormat(items[0].date(), "ddd, dd mmm yyyy hh:MM:ss o")
-  itunes:image(href="https://dl.dropbox.com/u/90393/instapaper-podcast/instapaper.jpg")
-  media:thumbnail(url="https://dl.dropbox.com/u/90393/instapaper-podcast/instapaper.jpg")
+  itunes:image(href=path+"podcast.jpg")
+  media:thumbnail(url=path+"podcast.jpg")
   language= "de-de"
-  - each entry in items
+  each entry in items
     item
-      title= entry.title
+      title= entry.title.trim()
       itunes:subtitle
-        = domainFromUrl(entry.url)
-        - if (entry.description)
+        = entry.hostname()
+        if entry.description
           |  | #{entry.description}
       itunes:explicit no
       link= entry.url
-      guid(isPermaLink="false")= entry.hash
+      guid(isPermaLink="false")= entry.filename()
       pubDate= dateFormat(entry.date(), "ddd, dd mmm yyyy hh:MM:ss o")
-      enclosure(url=path + entry.hash + ".m4a", length=entry.size, type='audio/x-m4a')
-      itunes:image(href="https://dl.dropbox.com/u/90393/instapaper-podcast/instapaper.jpg")
+      enclosure(url=path + "audio/" + entry.filename() + ".m4a", length=entry.size, type='audio/x-m4a')
+      itunes:image(href=path+"instapaper.jpg")
 </rss>

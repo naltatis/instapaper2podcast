@@ -11,6 +11,7 @@ url = require 'url'
 #convert -size 1500x1500 background.png "radial-gradient:transparent-#423c78" -compose multiply -flatten icon-423c78.png; convert icon-423c78.png logo.png -flatten icon-423c78.png; convert icon-423c78.png -resize 500x500 icon-423c78.png
 #convert -size 1500x1500 background.png "radial-gradient:transparent-#d73b00" -compose multiply -flatten icon-d73b00.png; convert icon-d73b00.png logo.png -flatten icon-d73b00.png; convert icon-d73b00.png -resize 500x500 icon-d73b00.png
 #convert -size 1500x1500 background.png "radial-gradient:transparent-#eeeeee" -compose multiply -flatten icon-eeeeee.png; convert icon-eeeeee.png logo.png -flatten icon-eeeeee.png; convert icon-eeeeee.png -resize 500x500 icon-eeeeee.png
+#convert -size 1500x1500 background.png "radial-gradient:transparent-#ffffff" -compose multiply -flatten icon-ffffff.png; convert icon-ffffff.png logo.png -flatten icon-ffffff.png; convert icon-ffffff.png -resize 500x500 icon-ffffff.png
 
 class Icon
   constructor: (@link) ->

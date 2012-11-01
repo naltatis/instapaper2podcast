@@ -2,6 +2,7 @@ LanguageDetect = require 'languagedetect'
 exec = require('child_process').exec
 spawn = require('child_process').spawn
 fs = require 'fs'
+mkdirp = require 'mkdirp'
 lngDetector = new LanguageDetect()
 
 String.prototype.trunc = (n) ->
@@ -12,13 +13,11 @@ Array.prototype.randomElement = ->
 
 class Speech
   constructor: (@item, @voices, @dropbox) ->
+    @audioPath = @dropbox.path + "audio/"
   path: ->
-    "#{@dropbox.path}#{@item.hash}.m4a"
+    "#{@audioPath}#{@item.filename()}.m4a"
   temp_path: ->
-    "/tmp/instapaper-to-speech-#{@item.hash}.aiff"
-  _create_dir: (path) ->
-    console.log "creating dir #{@dropbox.path}"
-    fs.mkdirSync @dropbox.path, 0755
+    "/tmp/instapaper-to-speech-#{@item.filename()}.aiff"
   _dir_exists: (path) ->
     try
       return fs.statSync @dropbox.path
@@ -32,30 +31,32 @@ class Speech
     @_stats (err, stat) =>
       if not stat?
         @create =>
-          @_stats cb
+          @_stats =>
+            cb null, @item
       else
-        console.log "skipping '#{@item.title}' - aac file already exists"
-        cb()
+        console.log "skipping '#{@item.title.trunc(30)}' - aac file already exists"
+        cb null, @item
   create: (cb) ->
     @item.load_text (err, text) =>
       @_write_file text, cb
   _write_file: (text, cb) ->
     @_say text, (err) =>
       @_convert (err) =>
+        console.log "3/3 finished aac file:\t #{@item.title.trunc(30)}"
         cb err, @item
   _say: (text, cb) ->
     voice = @_voice(text)
-    console.log "say using #{voice}: '#{@item.title.trunc(30)}' (#{text.split(' ').length} words)"
+    console.log "1/3 say using #{voice}:\t #{@item.title.trunc(30)} \t(#{text.split(' ').length} words)"
     say = spawn "say", ['-v', voice, '-r', '220', '-o', @temp_path()]
     say.stdin.write text
     say.stdin.end()
     say.stderr.on 'data', (data) ->
-      cb new Error data
+      throw new Error(data)
     say.on "exit", (code) =>
       cb()
   _convert: (cb) ->
-    @_create_dir @dropbox.path if not @_dir_exists @dropbox.path
-    console.log "convert: aiff to aac '#{@item.title.trunc(30)}'"
+    mkdirp.sync @audioPath
+    console.log "2/3 convert to aac:\t #{@item.title.trunc(30)}"
     exec "afconvert -f m4af -d aac -s 3 -b 128000 #{@temp_path()} #{@path()}", cb
   _voice: (text) ->
     languages = lngDetector.detect text

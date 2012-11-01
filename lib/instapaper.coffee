@@ -1,6 +1,8 @@
-rest = require 'restler'
+request = require 'superagent'
 jquery = require 'jquery'
 jsdom = require 'jsdom'
+urlUtil = require 'url'
+dateFormat = require 'dateformat'
 
 _request = (method, options, cb) ->
   defaults =
@@ -8,23 +10,31 @@ _request = (method, options, cb) ->
     password: @config.password
   options[name] = value for name, value of defaults
   url = "http://www.instapaper.com/api/1/#{method}"
-  rest.get(url, query: options)
-    .on('success', (data, res) -> cb null, data)
-    .on('error', (data, res) -> cb new Error('request failed'), data)
+  request.get(url).query(options).end (res) ->
+    cb null, res.text
 
 class Item
   constructor: (@config) ->
   load_text: (cb) ->
     @_request 'bookmarks/get_text', bookmark_id: @bookmark_id, (err, html) =>
-      document = jsdom.jsdom html
-      window = document.createWindow()
-      $ = jquery.create window
-      text = $('#story').text()
-      cb null, @_cleanup(text)
+      jsdom.env
+        html: html
+        scripts: ['http://code.jquery.com/jquery.js']
+        done: (errors, window) =>
+          $ = window.$
+          text = $('#story').text()
+          cb null, @_cleanup(text)
   date: ->
     date = new Date()
     date.setTime @time * 1000
     date
+  filename: ->
+    host = @hostname()
+    date = dateFormat(@date(), "yyyy.mm.dd")
+    "#{date}_#{host}_#{@hash}"
+  hostname: ->
+    hostname = urlUtil.parse(@url).hostname
+    hostname.replace(/^www\./, "")
   _cleanup: (text) ->
     text
       .replace(/[\n\t"]/g, ' ')
@@ -45,7 +55,7 @@ class Instapaper
           result.push item
       cb err, result
   _list: (cb) ->
-    @_request 'bookmarks/list', limit: @config.items, cb
+    @_request 'bookmarks/list', limit: @config.items, (err, res) -> cb(err, JSON.parse(res))
   _request: _request
 
 

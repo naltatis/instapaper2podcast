@@ -18,7 +18,7 @@ insta.items (err, items) ->
       #icon.get (err, image) ->
       #  item.image = image
       #  cb null, item
-    
+
   async.map items, toSpeech, (err, items) ->
     feed.write items, (err) ->
       console.log "done"

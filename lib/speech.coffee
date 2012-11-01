@@ -4,6 +4,12 @@ spawn = require('child_process').spawn
 fs = require 'fs'
 lngDetector = new LanguageDetect()
 
+String.prototype.trunc = (n) ->
+  @substr(0,n-1) + (if @length > n then '...' else '')
+
+Array.prototype.randomElement = ->
+  @[Math.floor(Math.random() * @length)]
+
 class Speech
   constructor: (@item, @voices, @dropbox) ->
   path: ->
@@ -12,7 +18,7 @@ class Speech
     "/tmp/instapaper-to-speech-#{@item.hash}.aiff"
   _create_dir: (path) ->
     console.log "creating dir #{@dropbox.path}"
-    fs.mkdirSync @dropbox.path, 0755 
+    fs.mkdirSync @dropbox.path, 0755
   _dir_exists: (path) ->
     try
       return fs.statSync @dropbox.path
@@ -39,8 +45,8 @@ class Speech
         cb err, @item
   _say: (text, cb) ->
     voice = @_voice(text)
-    console.log "converting '#{@item.title}' to speech using #{voice} (#{text.split(' ').length} words)"
-    say = spawn "say", ['-v', voice, '-r', '180', '-o', @temp_path()]
+    console.log "say using #{voice}: '#{@item.title.trunc(30)}' (#{text.split(' ').length} words)"
+    say = spawn "say", ['-v', voice, '-r', '220', '-o', @temp_path()]
     say.stdin.write text
     say.stdin.end()
     say.stderr.on 'data', (data) ->
@@ -49,12 +55,16 @@ class Speech
       cb()
   _convert: (cb) ->
     @_create_dir @dropbox.path if not @_dir_exists @dropbox.path
-    console.log "converting aiff to aac '#{@item.title}'"
-    exec "afconvert -f mp4f -d aac -s 3 -q 127 #{@temp_path()} #{@path()}", cb
+    console.log "convert: aiff to aac '#{@item.title.trunc(30)}'"
+    exec "afconvert -f m4af -d aac -s 3 -b 128000 #{@temp_path()} #{@path()}", cb
   _voice: (text) ->
     languages = lngDetector.detect text
     for language in languages
-      return @voices[language[0]] if @voices[language[0]]?
-    return @voices.english
-    
+      return @_voiceByLanguage(language[0]) if @_voiceByLanguage(language[0])
+    return  @_voiceByLanguage("english")
+  _voiceByLanguage: (language) ->
+    voices = @voices[language]
+    if voices
+      voices = [voices] if typeof voices is "string"
+      voices.randomElement()
 (exports ? this).Speech = Speech

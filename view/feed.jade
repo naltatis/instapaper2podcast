@@ -3,18 +3,22 @@
 channel
   title Instapaper Podcast
   description a podcast version of your instapaper articles assebled by lions text synthesis
-  link= "http://patchcast.no.de"
+  link https://github.com/naltatis/instapaper2podcast
   lastBuildDate= dateFormat(items[0].date(), "ddd, dd mmm yyyy hh:MM:ss o")
-  itunes:image(href="http://www.instapaper.com/images/press-kit/icon-200-stroked.png")
-  media:thumbnail(url="http://www.instapaper.com/images/press-kit/icon-200-stroked.png")
+  itunes:image(href="https://dl.dropbox.com/u/90393/instapaper-podcast/instapaper.jpg")
+  media:thumbnail(url="https://dl.dropbox.com/u/90393/instapaper-podcast/instapaper.jpg")
   language= "de-de"
   - each entry in items
     item
       title= entry.title
-      itunes:subtitle= entry.title
+      itunes:subtitle
+        = domainFromUrl(entry.url)
+        - if (entry.description)
+          |  | #{entry.description}
+      itunes:explicit no
       link= entry.url
       guid(isPermaLink="false")= entry.hash
       pubDate= dateFormat(entry.date(), "ddd, dd mmm yyyy hh:MM:ss o")
-      enclosure(url=path + entry.hash + ".m4a", length=entry.size, type='audio/mpeg')
-      itunes:image(href="http://www.instapaper.com/images/press-kit/icon-512.png")
+      enclosure(url=path + entry.hash + ".m4a", length=entry.size, type='audio/x-m4a')
+      itunes:image(href="https://dl.dropbox.com/u/90393/instapaper-podcast/instapaper.jpg")
 </rss>

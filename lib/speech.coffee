@@ -1,49 +1,11 @@
-LanguageDetect = require 'languagedetect'
-exec = require('child_process').exec
 spawn = require('child_process').spawn
+exec = require('child_process').exec
 fs = require 'fs'
 mkdirp = require 'mkdirp'
-lngDetector = new LanguageDetect()
+VoiceHelper = require('./voice_helper').VoiceHelper
 
 String.prototype.trunc = (n) ->
   @substr(0,n-1) + (if @length > n then '...' else '')
-
-Array.prototype.randomElement = ->
-  @[Math.floor(Math.random() * @length)]
-
-class VoiceHelper
-  constructor: (@voices) ->
-
-  voice: (text, hostname) ->
-    language = @_language text
-    voice = @_prefered_voice hostname
-    unless voice?
-      voice = @_random_voice language
-      @_prefered_voice hostname, voice
-    voice
-
-  _prefered_voice: (hostname, voice) ->
-    filename = "#{__dirname}/../_temp/hostname_to_voice.json"
-    content = if fs.existsSync(filename) then JSON.parse(fs.readFileSync(filename)) else {}
-    if voice #set
-      content[hostname] = voice
-      fs.writeFileSync filename, JSON.stringify(content)
-    else # get
-      content[hostname]
-
-  _language: (text) ->
-    languages = lngDetector.detect text
-    for language in languages
-      if @voices[language[0]]
-        return language[0]
-    "english"
-
-  _random_voice: (language) ->
-    voices = @voices[language]
-    if voices
-      voices = [voices] if typeof voices is "string"
-      voices.randomElement()
-
 
 class Speech
   constructor: (@item, voices, @dropbox) ->
@@ -67,20 +29,27 @@ class Speech
           @_stats =>
             cb null, @item
       else
-        console.log "skipping '#{@item.title.trunc(30)}' - aac file already exists"
+        console.log "audio file exists\t#{@item.filename()}.m4a"
         cb null, @item
   create: (cb) ->
     @item.load_text (err, text) =>
       @_write_file text, cb
   _write_file: (text, cb) ->
     @_say text, (err) =>
-      console.log "finished aac file\t#{@item.filename()}.m4a"
-      cb err, @item
+      @_compress (err) =>
+        @_coverArt (err) =>
+          console.log "finished aac file\t#{@item.filename()}.m4a"
+          cb err, @item
+  _compress: (cb) ->
+      exec "afconvert -f m4af -d aach '#{@path()}' '#{@path()}'", cb
+  _coverArt: (cb) ->
+    if @item.iconPath
+      exec "mp4art --optimize --add '#{@item.iconPath}' '#{@path()}'", cb
   _say: (text, cb) ->
     voice = @voiceHelper.voice(text, @item.hostname())
     mkdirp.sync @audioPath
-    console.log "say using #{voice}:\t #{@item.title.trunc(30)} \t(#{text.split(' ').length} words)"
-    say = spawn "say", ['-v', voice, '-r', '220', '-o', @path(), '--file-format=m4af', '--data-format=aac']
+    console.log "say using #{voice}:\t#{@item.title.trunc(30)} \t(#{text.split(' ').length} words)"
+    say = spawn "say", ['-v', voice, '-r', '220', '-o', @path(), '--file-format=m4af', '--data-format=alac']
     say.stdin.write text
     say.stdin.end()
     say.stderr.on 'data', (data) ->

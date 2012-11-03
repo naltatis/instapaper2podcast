@@ -13,11 +13,11 @@ Seq()
     insta.items @
   .flatten()
   .parMap 4, (item) ->
-    speech = new Speech item, config.voices, config.dropbox
-    speech.create_if_needed @
-  .parMap 4, (item) ->
     icon = new Icon item, config.dropbox.path+"image/"
     icon.get @
+  .parMap 4, (item) ->
+    speech = new Speech item, config.voices, config.dropbox
+    speech.create_if_needed @
   .unflatten()
   .seq (items) ->
     feed.write items, (err) ->

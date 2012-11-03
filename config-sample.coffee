@@ -8,5 +8,5 @@ module.exports =
     path: '/Users/username/Dropbox/Public/instapaper-podcast/'
     http: 'http://dl.dropbox.com/u/123455/instapaper-podcast/'
   voices:
-    english: 'Alex'
+    english: ['Alex', 'Victoria']
     german: 'Anna'

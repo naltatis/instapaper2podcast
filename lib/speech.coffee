@@ -11,13 +11,46 @@ String.prototype.trunc = (n) ->
 Array.prototype.randomElement = ->
   @[Math.floor(Math.random() * @length)]
 
+class VoiceHelper
+  constructor: (@voices) ->
+
+  voice: (text, hostname) ->
+    language = @_language text
+    voice = @_prefered_voice hostname
+    unless voice?
+      voice = @_random_voice language
+      @_prefered_voice hostname, voice
+    voice
+
+  _prefered_voice: (hostname, voice) ->
+    filename = "#{__dirname}/../_temp/hostname_to_voice.json"
+    content = if fs.existsSync(filename) then JSON.parse(fs.readFileSync(filename)) else {}
+    if voice #set
+      content[hostname] = voice
+      fs.writeFileSync filename, JSON.stringify(content)
+    else # get
+      content[hostname]
+
+  _language: (text) ->
+    languages = lngDetector.detect text
+    for language in languages
+      if @voices[language[0]]
+        return language[0]
+    "english"
+
+  _random_voice: (language) ->
+    voices = @voices[language]
+    if voices
+      voices = [voices] if typeof voices is "string"
+      voices.randomElement()
+
+
 class Speech
-  constructor: (@item, @voices, @dropbox) ->
+  constructor: (@item, voices, @dropbox) ->
     @audioPath = @dropbox.path + "audio/"
+    @voiceHelper = new VoiceHelper(voices)
   path: ->
     "#{@audioPath}#{@item.filename()}.m4a"
-  temp_path: ->
-    "/tmp/instapaper-to-speech-#{@item.filename()}.aiff"
   _dir_exists: (path) ->
     try
       return fs.statSync @dropbox.path
@@ -41,31 +74,17 @@ class Speech
       @_write_file text, cb
   _write_file: (text, cb) ->
     @_say text, (err) =>
-      @_convert (err) =>
-        console.log "3/3 finished aac file:\t #{@item.title.trunc(30)}"
-        cb err, @item
+      console.log "finished aac file\t#{@item.filename()}.m4a"
+      cb err, @item
   _say: (text, cb) ->
-    voice = @_voice(text)
-    console.log "1/3 say using #{voice}:\t #{@item.title.trunc(30)} \t(#{text.split(' ').length} words)"
-    say = spawn "say", ['-v', voice, '-r', '220', '-o', @temp_path()]
+    voice = @voiceHelper.voice(text, @item.hostname())
+    mkdirp.sync @audioPath
+    console.log "say using #{voice}:\t #{@item.title.trunc(30)} \t(#{text.split(' ').length} words)"
+    say = spawn "say", ['-v', voice, '-r', '220', '-o', @path(), '--file-format=m4af', '--data-format=aac']
     say.stdin.write text
     say.stdin.end()
     say.stderr.on 'data', (data) ->
       throw new Error(data)
     say.on "exit", (code) =>
-      cb()
-  _convert: (cb) ->
-    mkdirp.sync @audioPath
-    console.log "2/3 convert to aac:\t #{@item.title.trunc(30)}"
-    exec "afconvert -f m4af -d aac -s 3 -b 128000 #{@temp_path()} #{@path()}", cb
-  _voice: (text) ->
-    languages = lngDetector.detect text
-    for language in languages
-      return @_voiceByLanguage(language[0]) if @_voiceByLanguage(language[0])
-    return  @_voiceByLanguage("english")
-  _voiceByLanguage: (language) ->
-    voices = @voices[language]
-    if voices
-      voices = [voices] if typeof voices is "string"
-      voices.randomElement()
+      cb null, @item
 (exports ? this).Speech = Speech

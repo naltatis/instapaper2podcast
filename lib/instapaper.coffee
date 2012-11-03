@@ -1,5 +1,6 @@
 request = require 'superagent'
 jquery = require 'jquery'
+fs = require 'fs'
 jsdom = require 'jsdom'
 urlUtil = require 'url'
 dateFormat = require 'dateformat'
@@ -23,6 +24,7 @@ class Item
         done: (errors, window) =>
           $ = window.$
           text = $('#story').text()
+          @_save_html $('#story').html()
           cb null, @_cleanup(text)
   date: ->
     date = new Date()
@@ -31,7 +33,16 @@ class Item
   filename: ->
     host = @hostname()
     date = dateFormat(@date(), "yyyy.mm.dd")
-    "#{date}_#{host}_#{@hash}"
+    "#{date}_#{@bookmark_id}_#{host}"
+  _html_filename: ->
+    "#{__dirname}/../_temp/#{@bookmark_id}.html"
+  _save_html: (html) ->
+    fs.writeFileSync(@_html_filename(), html)
+  html: ->
+    if fs.existsSync @_html_filename()
+      fs.readFileSync @_html_filename()
+    else
+      ""
   hostname: ->
     hostname = urlUtil.parse(@url).hostname
     hostname.replace(/^www\./, "")

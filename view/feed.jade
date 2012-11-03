@@ -18,9 +18,14 @@ channel
         if entry.description
           |  | #{entry.description}
       itunes:explicit no
+      html = entry.html()
+      if html
+        description
+          :cdata
+            !{html}
       link= entry.url
       guid(isPermaLink="false")= entry.filename()
       pubDate= dateFormat(entry.date(), "ddd, dd mmm yyyy hh:MM:ss o")
       enclosure(url=path + "audio/" + entry.filename() + ".m4a", length=entry.size, type='audio/x-m4a')
-      itunes:image(href=path+"instapaper.jpg")
+      itunes:image(href=path + "image/" + entry.icon)
 </rss>

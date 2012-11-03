@@ -1,6 +1,7 @@
-jquery = require 'jquery'
-jsdom = require 'jsdom'
-url = require 'url'
+urlColor = require './url_color'
+mkdirp = require 'mkdirp'
+fs = require 'fs'
+exec = require('child_process').exec
 
 #convert -size 1500x1500 background.png "radial-gradient:transparent-#2c7f0e" -compose multiply -flatten icon-2c7f0e.png; convert icon-2c7f0e.png logo.png -flatten icon-2c7f0e.png; convert icon-2c7f0e.png -resize 500x500 icon-2c7f0e.png
 #convert -size 1500x1500 background.png "radial-gradient:transparent-#adadad" -compose multiply -flatten icon-adadad.png; convert icon-adadad.png logo.png -flatten icon-adadad.png; convert icon-adadad.png -resize 500x500 icon-adadad.png
@@ -14,17 +15,42 @@ url = require 'url'
 #convert -size 1500x1500 background.png "radial-gradient:transparent-#ffffff" -compose multiply -flatten icon-ffffff.png; convert icon-ffffff.png logo.png -flatten icon-ffffff.png; convert icon-ffffff.png -resize 500x500 icon-ffffff.png
 
 class Icon
-  constructor: (@link) ->
+  constructor: (@item, @targetDir) ->
+    @tempDir = "#{__dirname}/../_temp/"
+    @assetsDir = "#{__dirname}/../assets/"
+    mkdirp.sync @targetDir
+    mkdirp.sync @tempDir
+    @hex = urlColor(@item.url)
+
+  path: ->
+    "#{@targetDir}#{@filename()}"
+
+  filename: ->
+    hex = @hex.substr(1)
+    "icon-#{hex}.jpg"
+
   get: (cb) ->
-    jsdom.env @link, (err, window) =>
-      $ = jquery.create window
-      icon = @_icon $
-      cb err, icon
-  _icon: ($) ->
-    href = $("meta[property='og:image'], meta[name='og:image']").attr('content')
-    href = $('link[rel="apple-touch-icon"]').attr('href') if not href?
-    href = @_absolute href if href?
-    href
-  _absolute: (href) ->
-    url.resolve @link, href
-(exports ? this).Icon = Icon
+    callback = (err) =>
+      @item.icon = @filename()
+      cb err, @item
+
+    if fs.existsSync(@path())
+      callback()
+    else
+      @_create callback
+
+  _create: (cb) ->
+      hex = @hex.substr(1)
+      target = @path()
+      command =
+        """
+        convert -size 1500x1500 #{@assetsDir}background.png "radial-gradient:transparent-##{hex}" -compose multiply -flatten #{@tempDir}icon-#{hex}.png;
+        convert #{@tempDir}icon-#{hex}.png #{@assetsDir}logo.png -flatten -quality 40 #{target};
+        rm #{@tempDir}icon-#{hex}.png
+        """
+      exec command, (err, stdout, stderr) =>
+        console.log "created new icon:\t#{target}"
+        cb err, @filename()
+
+module.exports =
+  Icon: Icon

@@ -4,7 +4,7 @@ Apple added international high quality voices to OS X Lion. This script pulls yo
 
 Requirements
 ------------
-* node.js -- `brew install node`
+* node.js, ImageMagick and MP4v2 -- `brew install node imagemagick mp4v2`
 * [paid 1$ per month Instapaper subscription for full api access](http://www.instapaper.com/subscription)
 * OS X Lion *for international language support*
 

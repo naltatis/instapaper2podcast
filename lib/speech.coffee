@@ -8,7 +8,7 @@ String.prototype.trunc = (n) ->
   @substr(0,n-1) + (if @length > n then '...' else '')
 
 class Speech
-  constructor: (@item, voices, @dropbox) ->
+  constructor: (@item, voices, @speed, @dropbox) ->
     @audioPath = @dropbox.path + "audio/"
     @voiceHelper = new VoiceHelper(voices)
   path: ->
@@ -32,7 +32,8 @@ class Speech
         console.log "audio file exists\t#{@item.filename()}.m4a"
         cb null, @item
   create: (cb) ->
-    @item.load_text (err, text) =>
+    @item.load_text (err, body) =>
+      text = "#{@item.title}[[slnc 1000]]#{body}[[slnc 5000]]"
       @_write_file text, cb
   _write_file: (text, cb) ->
     @_say text, (err) =>
@@ -49,7 +50,7 @@ class Speech
     voice = @voiceHelper.voice(text, @item.hostname())
     mkdirp.sync @audioPath
     console.log "say using #{voice}:\t#{@item.title.trunc(30)} \t(#{text.split(' ').length} words)"
-    say = spawn "say", ['-v', voice, '-r', '220', '-o', @path(), '--file-format=m4af', '--data-format=alac']
+    say = spawn "say", ['-v', voice, '-r', @speed, '-o', @path(), '--file-format=m4af', '--data-format=alac']
     say.stdin.write text
     say.stdin.end()
     say.stderr.on 'data', (data) ->

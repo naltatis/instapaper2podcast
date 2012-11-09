@@ -16,7 +16,7 @@ Seq()
     icon = new Icon item, config.dropbox.path+"image/"
     icon.get @
   .parMap 4, (item) ->
-    speech = new Speech item, config.voices, config.dropbox
+    speech = new Speech item, config.voices, config.speed, config.dropbox
     speech.create_if_needed @
   .unflatten()
   .seq (items) ->

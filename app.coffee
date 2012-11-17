@@ -21,4 +21,4 @@ Seq()
   .unflatten()
   .seq (items) ->
     feed.write items, (err) ->
-      console.log "done"
+      #console.log "done"

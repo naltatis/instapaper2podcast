@@ -29,7 +29,7 @@ class Speech
           @_stats =>
             cb null, @item
       else
-        console.log "audio file exists\t#{@item.filename()}.m4a"
+        #console.log "audio file exists\t#{@item.filename()}.m4a"
         cb null, @item
   create: (cb) ->
     @item.load_text (err, body) =>

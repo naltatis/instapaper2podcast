@@ -19,7 +19,7 @@ class Feed
       dateFormat: dateFormat
     jade.renderFile "#{__dirname}/../view/feed.jade", model, cb
   _write: (html, cb) ->
-    console.log "writing podcast file to #{@path()}"
+    #console.log "writing podcast file to #{@path()}"
     fs.writeFile @path(), html, (err) ->
       cb err
     unless fs.existsSync @iconPath()

@@ -45,7 +45,7 @@ class Icon
       """
     exec command, (err, stdout, stderr) =>
       console.log "created new icon:\t#{target}"
-      cb null, @filename()
+      cb err, @filename()
 
 module.exports =
   Icon: Icon

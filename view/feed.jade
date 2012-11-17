@@ -27,5 +27,5 @@ channel
       guid(isPermaLink="false")= entry.filename()
       pubDate= dateFormat(entry.date(), "ddd, dd mmm yyyy hh:MM:ss o")
       enclosure(url=path + "audio/" + entry.filename() + ".m4a", length=entry.size, type='audio/x-m4a')
-      itunes:image(href=path + "image/" + entry.icon)
+      itunes:image(href=path + "image/" + entry.iconFile)
 </rss>
